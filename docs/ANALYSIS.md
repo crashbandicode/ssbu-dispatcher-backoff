@@ -149,6 +149,25 @@ latency per occurrence, in a frame of 16.667 ms. The measured Eden cadence
 used 1 µs requests; the hardware defaults are longer and fewer, and are what
 the Switch test validates.
 
+## 5b. Production build on Eden
+
+The same hook as shipped here, built into ssbu-online-deluxe-rewrite 0.3.0
+and toggled only through its `DISABLE_BACKOFF` flag and INI, on one isolated
+Eden profile under the 175% quota (17–20 s windows each):
+
+| Run | Hook | FPS | CPU ms per frame | Sleep rate |
+| --- | --- | ---: | ---: | --- |
+| CSS, two-image LessLag (A) | off | 55.59 | 26.55 | — |
+| CSS, two-image LessLag (B) | default policy | 60.00 | 19.50 | 3068/s, 50 µs |
+| CSS, two-image LessLag (A) | off | 54.15 | 26.83 | — |
+| CSS, two-image LessLag | `preset=measured` | 59.03 | 22.92 | 2744/s, 1 µs |
+| CSS, Vanilla | default policy | 60.01 | 20.08 | 2590/s, 50 µs |
+| Live match (Lucario vs Kirby, Battlefield) | default policy | 59.84 | 16.34 | 1069/s, 50 µs |
+| CSS, two-image LessLag, unlimited CPU | default policy | 60.0 | — | — |
+
+The default policy beats the measured diagnostic cadence on the CSS and
+costs nothing in Vanilla or in a match, where it only lowers idle CPU.
+
 ## 6. What the Switch test must show
 
 Install, boot, and confirm `install.log` ends with `result=installed` and the

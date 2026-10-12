@@ -113,7 +113,11 @@ control, backoff, control on one boot of one binary.
 | Live match, LessLag, 175% | 57.43 / 59.35 / 59.90 | 20.62 / 18.74 / 19.32 |
 
 Main-core CPU fell from 11.7 to 6.7 ms per frame while the UI worker stayed at
-5.7–5.8 ms: the saving is removed polling, not removed work. These are
+5.7–5.8 ms: the saving is removed polling, not removed work. The production
+hook with the default policy was then re-measured the same way: character
+select 55.6 → **60.0** → 54.2 fps (off / on / off) at 26.6 → 19.5 → 26.8 CPU
+ms per frame, Vanilla 60 with the same CPU saving, live match 59.8 fps at
+16.3 CPU ms per frame. These are
 emulator measurements; CPU quota competition and JIT lock cost are emulator
 artifacts, so the numbers do not transfer to the Switch as-is. The Switch
 result is recorded in [docs/ANALYSIS.md](docs/ANALYSIS.md) once measured.
