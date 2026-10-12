@@ -1,0 +1,30 @@
+[package]
+name = "ssbu-dispatcher-backoff"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Skyline plugin for Super Smash Bros. Ultimate 13.0.5 that stops the game's task dispatcher from busy-polling empty queues while it waits on a dependency"
+license = "MIT"
+
+[package.metadata.skyline]
+titleid = "01006A800016E000"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[target.'cfg(target_os = "switch")'.dependencies]
+skyline = "=0.6.0"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+opt-level = 3
+debug = 2
+strip = false
+lto = "thin"
+codegen-units = 1
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("switch"))'] }
