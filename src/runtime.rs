@@ -303,6 +303,11 @@ fn log(lines: &str) {
 #[skyline::main(name = "ssbu-dispatcher-backoff")]
 pub fn main() {
     let mut report = String::new();
+    let _ = writeln!(
+        report,
+        "plugin=ssbu-dispatcher-backoff/{}",
+        env!("CARGO_PKG_VERSION")
+    );
     let version = display_version();
     let _ = writeln!(report, "version={version}");
     if version != "13.0.5" {

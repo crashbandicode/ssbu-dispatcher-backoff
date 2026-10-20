@@ -186,6 +186,36 @@ five words. Then:
 6. If anything regresses, try `preset=measured`, then `cooldown_us=16667`,
    and report the Backoff row and `install.log` with the result.
 
+## 6b. What the Switch showed (Deluxe build of this hook)
+
+The hook reached hardware inside ssbu-online-deluxe-rewrite 0.3.0 on
+2026-10-12; the standalone NRO of this repository was not installed alongside
+it (one owner per site). Operator's run, two-image LessLag profile, default
+policy:
+
+| Check from section 6 | Result |
+| --- | --- |
+| 1. Character select, two-image profile, idle | **58–60 fps**, up from 48–50 |
+| 1. Character select while the cursor hand moves | 46 fps, with the default ramp and with `preset=measured` alike |
+| 3. Live match | 60 fps |
+| 2, 4, 5, 6 | no dated record |
+
+The moving-hand drop was not this hook. Deluxe's hardware captures of
+2026-10-13 and 2026-10-14 put it in the two-image presentation path: after
+the swapchain acquire the frame waits for its texture to become ready, and
+the game presents a frame only after it has run the next frame's whole CPU
+update, so in a two-image ring a present that misses the vsync costs the next
+acquire a full vsync. Deluxe 0.4.0 presents at the end of the submitting
+flush instead, and the console hand sweep went from 49.9 fps (20% of frames
+over 20 ms) to 59.85 fps (1.3%). The backoff stayed on by default through all
+of that and remains on in Deluxe 0.6.2, where `dispatcher_backoff=false`
+switches it off for an A/B. Deluxe's `docs/VALIDATION.md` (0.3.0, 0.3.1 and
+0.4.0 entries) and `docs/RENDERING.md` hold the records.
+
+What this does not establish: that this standalone NRO, with its own install
+log and config reader, behaves the same on a Switch. It has not been booted
+there or in Eden. When it is, the result goes here.
+
 ## 7. Provenance
 
 Attribution and A/B/A measurements by the GPT-6 Astra agent working in the

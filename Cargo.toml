@@ -1,6 +1,6 @@
 [package]
 name = "ssbu-dispatcher-backoff"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 publish = false
 description = "Skyline plugin for Super Smash Bros. Ultimate 13.0.5 that stops the game's task dispatcher from busy-polling empty queues while it waits on a dependency"

@@ -1,5 +1,10 @@
 # ssbu-dispatcher-backoff
 
+> **Disclaimer:** this project was developed with the assistance of AI
+> (Claude, Codex and other coding agents) under the operator's direction and
+> review. Every result recorded here comes from the dated tests cited below;
+> nothing is claimed beyond those records.
+
 A small [Skyline](https://github.com/skyline-dev/skyline) plugin for Super
 Smash Bros. Ultimate **13.0.5** that stops the game's task dispatcher from
 busy-polling six empty job queues while it waits for an unfinished dependency.
@@ -13,9 +18,11 @@ while one UI layout animation job runs on a worker thread.
 | 52–54 fps, 20.0 ms frame, 27.2 CPU ms/frame | 59 fps, 16.7 ms frame, 23.3 CPU ms/frame |
 
 Those two frames come from one emulator session with the diagnostic form of
-the fix toggled between captures. Switch screenshots are added after the
-hardware test. The full write-up, with call chain, numbers and the hook
-contract, is in [docs/ANALYSIS.md](docs/ANALYSIS.md).
+the fix toggled between captures. On a Switch, the same hook built into
+ssbu-online-deluxe-rewrite 0.3.0 took the idle character select from 48–50 to
+58–60 fps on 2026-10-12 (see [Evidence](#evidence)). The full write-up, with
+call chain, numbers and the hook contract, is in
+[docs/ANALYSIS.md](docs/ANALYSIS.md).
 
 ## What it does
 
@@ -51,7 +58,18 @@ appears. Any sign of work resets the streak.
 
 ## Install
 
-Copy `libssbu_dispatcher_backoff.nro` to
+Releases are published on
+[Forgejo](https://git.syntaxbyexample.com/intpa/ssbu-dispatcher-backoff/releases)
+and mirrored on
+[GitHub](https://github.com/crashbandicode/ssbu-dispatcher-backoff/releases)
+with the same assets: the NRO, an SD-card zip, `manifest.json` and
+`SHA256SUMS.txt`.
+
+**Easiest:** extract `ssbu-dispatcher-backoff-vX.Y.Z-sd.zip` to the root of
+the SD card. It contains only the plugin at its Skyline path and a short
+README; no game data.
+
+**Manual:** copy `libssbu_dispatcher_backoff.nro` to
 
 ```text
 sd:/atmosphere/contents/01006A800016E000/romfs/skyline/plugins/
@@ -63,16 +81,24 @@ On the next boot the plugin writes
 sd:/ultimate/ssbu_dispatcher_backoff/install.log
 ```
 
-with the detected game version, the policy in effect, the five instruction
-words it found at the hook site and the result: `installed`,
+with the plugin version, the detected game version, the policy in effect, the
+five instruction words it found at the hook site and the result: `installed`,
 `unsupported_version`, `skipped_site_words_differ` or
 `skipped_site_owned_by_another_plugin`.
 
+### With ssbu-online-deluxe-rewrite
+
 The same fix is built into
 [ssbu-online-deluxe-rewrite](https://git.syntaxbyexample.com/intpa/ssbu-online-deluxe-rewrite)
-0.3.0 and later. Both plugins verify the original bytes before patching, so
-whichever loads first owns the site and the other one skips. Installing both
-is harmless but pointless.
+0.3.0 and later, on by default (its `dispatcher_backoff=false` switch turns it
+off). Both plugins verify the original bytes before patching, so whichever
+loads first owns the site and the other one skips: this plugin logs
+`skipped_site_owned_by_another_plugin`, Deluxe shows `External` in its
+Backoff row. Installing both is harmless but pointless. Deluxe's copy also
+carries an eligibility gate (no sleep before one of its scene hooks has fired
+or while its tracked window has not presented for 250 ms); this plugin has no
+other hooks to gate on and sleeps on any eligible idle pass from the moment it
+installs.
 
 ## Tuning
 
@@ -98,7 +124,31 @@ all_threads=0
 `max_ns=0` disables sleeping while keeping the hook installed. Values outside
 the documented ranges are clamped; unknown keys are ignored.
 
-## Evidence summary
+## Evidence
+
+### On the Switch
+
+The hook has been on the operator's Switch since 2026-10-12 as part of
+ssbu-online-deluxe-rewrite, which installs it at boot in every build from
+0.3.0 on. The operator's hardware result for the 0.3.0 build, two-image
+LessLag profile, default policy: character select idle **58–60 fps, up from
+48–50**; a live match stayed at 60. Moving the cursor hand still dropped the
+character select to 46 fps, with the default ramp and with `preset=measured`
+alike; the hardware captures that followed traced that drop to the two-image
+presentation path (a texture-ready wait after the swapchain acquire, with the
+game presenting a frame only after the next frame's CPU update), not to this
+hook, and Deluxe 0.4.0 removed it on the console by presenting at the flush
+(49.9 → 59.85 fps on the hand sweep). The records are Deluxe's
+`docs/VALIDATION.md` (0.3.0, 0.3.1 and 0.4.0 entries) and `docs/RENDERING.md`;
+[docs/ANALYSIS.md](docs/ANALYSIS.md) section 6b summarizes them against the
+test plan.
+
+**This standalone NRO has not itself been booted on a Switch or in Eden.** It
+is the same hook, site fingerprint and decision logic with its own install
+log and config reader; the test plan for it is section 6 of
+[docs/ANALYSIS.md](docs/ANALYSIS.md), and its result will be recorded there.
+
+### On the emulator
 
 Eden (Linux, Vulkan, 1x, isolated profile) with the emulator's own systemd
 unit limited to 175% CPU to reproduce the Switch-like pressure. A/B/A means
@@ -117,10 +167,10 @@ Main-core CPU fell from 11.7 to 6.7 ms per frame while the UI worker stayed at
 hook with the default policy was then re-measured the same way: character
 select 55.6 → **60.0** → 54.2 fps (off / on / off) at 26.6 → 19.5 → 26.8 CPU
 ms per frame, Vanilla 60 with the same CPU saving, live match 59.8 fps at
-16.3 CPU ms per frame. These are
-emulator measurements; CPU quota competition and JIT lock cost are emulator
-artifacts, so the numbers do not transfer to the Switch as-is. The Switch
-result is recorded in [docs/ANALYSIS.md](docs/ANALYSIS.md) once measured.
+16.3 CPU ms per frame. These are emulator measurements; CPU quota competition
+and JIT lock cost are emulator artifacts, so the numbers do not transfer to
+the Switch as-is. The Switch numbers above come from Deluxe's build of the
+hook.
 
 ## Safety
 
@@ -133,14 +183,17 @@ result is recorded in [docs/ANALYSIS.md](docs/ANALYSIS.md) once measured.
 - Latency: a job that completes just after a sleep begins waits for that sleep
   to end, at most `max_ns` plus the kernel's wake latency. With the defaults
   that is under 0.1 ms of a 16.7 ms frame.
-- Not covered by the measurements: loading screens and results, other 13.0.x
-  images, worker-thread dispatchers (off by default).
+- Not covered by the measurements: loading screens and results, boot-time
+  waits (no eligibility gate; see Install), other 13.0.x images,
+  worker-thread dispatchers (off by default).
 
 ## Build
 
-Requires the `skyline-v3` Rust toolchain and `cargo-skyline`.
+Requires the `skyline-v3` Rust toolchain and `cargo-skyline`;
+`rust-toolchain.toml` pins the host toolchain.
 
 ```text
+cargo fmt --check
 cargo test
 cargo clippy --all-targets -- -D warnings
 cargo skyline clippy -- -- -D warnings
@@ -148,8 +201,10 @@ cargo skyline build --release
 # target/aarch64-skyline-switch/release/libssbu_dispatcher_backoff.nro
 ```
 
-`src/policy.rs` is the host-tested decision logic; `src/runtime.rs` is the
-Switch-only hook. The repository contains no game assets.
+`src/policy.rs` is the host-tested decision logic (7 tests); its decision part
+is the same code as Deluxe's `src/dispatcher_backoff.rs`, while the config-file
+parser exists only here. `src/runtime.rs` is the Switch-only hook. The
+repository contains no game assets.
 
 ## License
 

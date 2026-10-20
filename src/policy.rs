@@ -1,6 +1,6 @@
 //! Host-testable backoff decision for the game's task dispatcher. No game
-//! memory is touched here; `runtime::dispatcher_backoff` reads the dispatcher
-//! and hands a [`Snapshot`] in.
+//! memory is touched here; `runtime` reads the dispatcher and hands a
+//! [`Snapshot`] in.
 //!
 //! The dispatcher scans its pending-dependency records and then polls three
 //! local and three shared priority queues. When every queue is empty and at
@@ -12,8 +12,12 @@
 //! sleep briefly before the game's own rescan. It never decides to skip
 //! work: any sign that work may be ready is a veto.
 //!
-//! The same file ships in the standalone `ssbu-dispatcher-backoff` NRO; keep
-//! the two copies identical.
+//! The decision logic ([`Snapshot`], [`Policy`] and its default, [`Streak`],
+//! [`Veto`], [`decide`], [`status_label`]) is the same code as
+//! `src/dispatcher_backoff.rs` in ssbu-online-deluxe-rewrite; keep that part
+//! identical. The config-file parser ([`Policy::parse`], [`Policy::sanitized`],
+//! [`Policy::MEASURED`]) exists only here: Deluxe retired its
+//! `dispatcher_backoff.ini` on 2026-10-16 and ships the default alone.
 
 /// What the glue observed on one fall-through pass at the hook site.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
