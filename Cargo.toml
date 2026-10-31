@@ -10,7 +10,9 @@ license = "MIT"
 titleid = "01006A800016E000"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+# cdylib only: Cargo skips LTO for a library that is also an rlib, and the
+# unit tests do not need one.
+crate-type = ["cdylib"]
 
 [target.'cfg(target_os = "switch")'.dependencies]
 skyline = "=0.6.0"
