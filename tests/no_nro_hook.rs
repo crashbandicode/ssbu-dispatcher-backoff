@@ -1,3 +1,5 @@
+//! An rlib alongside the cdylib skips LTO and retains Skyline NRO hook imports.
+
 use std::fs;
 use std::path::Path;
 
@@ -28,4 +30,15 @@ fn no_nro_hook_provider_in_source_or_manifest() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     check(&root.join("src"));
     check(&root.join("Cargo.toml"));
+}
+
+#[test]
+fn the_plugin_is_built_as_a_cdylib_only() {
+    let manifest = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml"))
+        .unwrap();
+    let crate_types: Vec<_> = manifest
+        .lines()
+        .filter(|line| line.trim_start().starts_with("crate-type"))
+        .collect();
+    assert_eq!(crate_types, ["crate-type = [\"cdylib\"]"]);
 }
