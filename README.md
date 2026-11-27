@@ -58,33 +58,96 @@ appears. Any sign of work resets the streak.
 
 ## Install
 
-Releases are published on
-[Forgejo](https://git.syntaxbyexample.com/intpa/ssbu-dispatcher-backoff/releases)
-and mirrored on
-[GitHub](https://github.com/crashbandicode/ssbu-dispatcher-backoff/releases)
-with the same assets: the NRO, an SD-card zip, `manifest.json` and
-`SHA256SUMS.txt`.
+Dispatcher Backoff v0.1.1 (2026-10-19) reduces CPU use while the character select screen waits for work.
 
-**Easiest:** extract `ssbu-dispatcher-backoff-vX.Y.Z-sd.zip` to the root of
-the SD card. It contains only the plugin at its Skyline path and a short
-README; no game data.
+### What you need
 
-**Manual:** copy `libssbu_dispatcher_backoff.nro` to
+| Thing | Upstream | Our fork | What the fork changes |
+| --- | --- | --- | --- |
+| Switch firmware | [latest](https://en-americas-support.nintendo.com/app/answers/detail/a_id/22525) | — | — |
+| Super Smash Bros. Ultimate | 13.0.5 | — | — |
+| Atmosphère | [latest](https://github.com/Atmosphere-NX/Atmosphere/releases/latest) | [RO cleanup](https://git.syntaxbyexample.com/intpa/atmosphere-ro-cleanup-p1) | Cleans up after a module fails to load. |
+| Skyline | [latest](https://github.com/skyline-dev/skyline/releases/latest) | [Skyline fork](https://git.syntaxbyexample.com/intpa/skyline) | Protects the logging queue when multiple threads write. |
 
-```text
-sd:/atmosphere/contents/01006A800016E000/romfs/skyline/plugins/
-```
+### Install
 
-On the next boot the plugin writes
+1. Fully close Smash. Download `libssbu_dispatcher_backoff.nro` from [release v0.1.1](https://git.syntaxbyexample.com/intpa/ssbu-dispatcher-backoff/releases/tag/v0.1.1).
+2. Copy it to `sd:/atmosphere/contents/01006A800016E000/romfs/skyline/plugins/libssbu_dispatcher_backoff.nro` on the SD card. Replace the existing file if prompted.
+3. Start Smash.
 
-```text
-sd:/ultimate/ssbu_dispatcher_backoff/install.log
-```
+You can instead extract `ssbu-dispatcher-backoff-v0.1.1-sd.zip` to the SD root. It puts the same plugin at the path above and an optional guide at `sd:/SSBU-DISPATCHER-BACKOFF-README.txt`.
 
-with the plugin version, the detected game version, the policy in effect, the
-five instruction words it found at the hook site and the result: `installed`,
-`unsupported_version`, `skipped_site_words_differ` or
-`skipped_site_owned_by_another_plugin`.
+Keep `manifest.json` and `SHA256SUMS.txt` on your computer for checking the download.
+
+**Update:** Close Smash and replace the same NRO. Keep your optional `sd:/ultimate/ssbu_dispatcher_backoff/config.ini`.
+
+**Uninstall:** Close Smash, delete the NRO from the path above and restart the game.
+
+### What changed
+
+| Feature | Change |
+| --- | --- |
+| Version in install log | Identify the installed release in install.log. |
+| Tuning guide | Explains when the standalone plugin waits and how Deluxe differs. |
+
+[Read the Dispatcher Backoff guide](https://git.syntaxbyexample.com/intpa/ssbu-dispatcher-backoff/src/tag/v0.1.1/docs/ANALYSIS.md).
+
+### Tested on
+
+| Feature | Hardware | Eden |
+| --- | --- | --- |
+| Version in install log | No | No |
+| Idle backoff in the standalone download | No | No |
+| Idle backoff in Deluxe or diagnostic builds | Yes (Deluxe) | Yes |
+
+### Known limits
+
+- Online Deluxe 0.3.0 and later already include this fix. Use one copy.
+
+<details>
+<summary>Older release · v0.1.0</summary>
+
+Dispatcher Backoff v0.1.0 (2026-10-12) reduces CPU use while the character select screen waits for work.
+
+### What you need
+
+| Thing | Upstream | Our fork | What the fork changes |
+| --- | --- | --- | --- |
+| Switch firmware | [latest](https://en-americas-support.nintendo.com/app/answers/detail/a_id/22525) | — | — |
+| Super Smash Bros. Ultimate | 13.0.5 | — | — |
+| Atmosphère | [latest](https://github.com/Atmosphere-NX/Atmosphere/releases/latest) | [RO cleanup](https://git.syntaxbyexample.com/intpa/atmosphere-ro-cleanup-p1) | Cleans up after a module fails to load. |
+| Skyline | [latest](https://github.com/skyline-dev/skyline/releases/latest) | [Skyline fork](https://git.syntaxbyexample.com/intpa/skyline) | Protects the logging queue when multiple threads write. |
+
+### Install
+
+1. Fully close Smash. Download `libssbu_dispatcher_backoff.nro` from [release v0.1.0](https://git.syntaxbyexample.com/intpa/ssbu-dispatcher-backoff/releases/tag/v0.1.0).
+2. Copy it to `sd:/atmosphere/contents/01006A800016E000/romfs/skyline/plugins/libssbu_dispatcher_backoff.nro` on the SD card. Replace the existing file if prompted.
+3. Start Smash.
+
+**Update:** Close Smash and replace the same NRO. Keep your optional `sd:/ultimate/ssbu_dispatcher_backoff/config.ini`.
+
+**Uninstall:** Close Smash, delete the NRO from the path above and restart the game.
+
+### What changed
+
+| Feature | Change |
+| --- | --- |
+| Idle character select | Uses less CPU while the game waits for work. |
+
+[Read the Dispatcher Backoff guide](https://git.syntaxbyexample.com/intpa/ssbu-dispatcher-backoff/src/tag/v0.1.0/docs/ANALYSIS.md).
+
+### Tested on
+
+| Feature | Hardware | Eden |
+| --- | --- | --- |
+| Idle backoff in diagnostic build | No | Yes |
+| Standalone download | No | No |
+
+### Known limits
+
+- Online Deluxe 0.3.0 and later already include this fix. Use one copy.
+
+</details>
 
 ### With ssbu-online-deluxe-rewrite
 
