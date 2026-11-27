@@ -10,7 +10,7 @@ license = "MIT"
 titleid = "01006A800016E000"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+crate-type = ["cdylib"]
 
 [target.'cfg(target_os = "switch")'.dependencies]
 skyline = "=0.6.0"
